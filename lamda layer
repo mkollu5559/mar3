@@ -22,6 +22,10 @@ locals {
     "monitoring-layer"
   ]
 
+  lambda_layers = var.add_layers ? [
+    for l in data.aws_lambda_layer_version.layers : l.arn
+  ] : null
+
 }
 
 ############################
@@ -45,23 +49,5 @@ resource "aws_lambda_function" "this" {
 
   source_code_hash = filebase64sha256(var.filename)
 
-  layers = var.add_layers ? [
-    for l in data.aws_lambda_layer_version.layers : l.arn
-  ] : null
-}
-
-############################
-# calling module
-############################
-module "lambda" {
-
-  source = "./modules/lambda"
-
-  function_name = "my-lambda"
-  role_arn      = aws_iam_role.lambda.arn
-  handler       = "app.lambda_handler"
-  runtime       = "python3.12"
-  filename      = "${path.module}/lambda.zip"
-
-  add_layers = true
+  layers = local.lambda_layers
 }

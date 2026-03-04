@@ -1,0 +1,62 @@
+variables.tf
+variable "add_layers" {
+  type    = bool
+  default = false
+}
+
+variable "layer_names" {
+  type    = list(string)
+  default = []
+}
+data.tf
+data "aws_lambda_layer_version" "layers" {
+  for_each = var.add_layers ? toset(var.layer_names) : []
+  layer_name = each.value
+}
+locals.tf
+locals {
+  lambda_layers = var.add_layers ? [
+    for l in data.aws_lambda_layer_version.layers : l.arn
+  ] : []
+}
+lambda.tf
+resource "aws_lambda_function" "this" {
+
+  function_name = var.function_name
+  role          = var.role_arn
+  handler       = var.handler
+  runtime       = var.runtime
+  filename      = var.filename
+
+  layers = local.lambda_layers
+}
+calling module (ONLY this)
+add_layers = true
+result
+add_layers	layers attached
+false	none
+true	layers from module defaults
+
+If you want cleaner enterprise pattern (no layer names in calling module ever) do this:
+
+locals {
+  default_layers = [
+    "shared-utils",
+    "monitoring-layer"
+  ]
+
+  lambda_layers = var.add_layers ? [
+    for l in data.aws_lambda_layer_version.layers : l.arn
+  ] : []
+}
+
+and
+
+data "aws_lambda_layer_version" "layers" {
+  for_each   = var.add_layers ? toset(local.default_layers) : []
+  layer_name = each.value
+}
+
+Then calling module ONLY
+
+add_layers = true

@@ -1,0 +1,3 @@
+aws ssm describe-sessions --state Active --region <region> \
+  --query "Sessions[*].[SessionId,Owner,StartDate,Target]" \
+  --output table

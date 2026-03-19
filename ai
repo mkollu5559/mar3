@@ -1,0 +1,3 @@
+Work involved: convert the existing script into Ansible tasks, parameterize it for multiple target users in one environment, integrate EPV and PXP/IR360 API calls, handle password generation and updates, add logging/error handling, and test across all users.
+
+AI may help with initial conversion/boilerplate, but most effort is in API integration, parameterization, and validation.

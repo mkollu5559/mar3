@@ -1,3 +1,11 @@
-Work involved: convert the existing script into Ansible tasks, parameterize it for multiple target users in one environment, integrate EPV and PXP/IR360 API calls, handle password generation and updates, add logging/error handling, and test across all users.
+variable "create_s3_folder" {
+  type    = list(string)
+  default = []
+}
 
-AI may help with initial conversion/boilerplate, but most effort is in API integration, parameterization, and validation.
+resource "aws_s3_object" "folders" {
+  for_each = toset(var.create_s3_folder)
+
+  bucket = var.s3_bucket_id
+  key    = "${trimsuffix(each.value, "/")}/"
+}
